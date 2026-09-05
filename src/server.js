@@ -41,12 +41,22 @@ async function startServer() {
     });
   }, 15000);
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`⚡ Razorpay Payment Failure Recovery Agent Server`);
     console.log(`🌐 Dashboard running at: http://localhost:${PORT}`);
     console.log(`📥 Webhook endpoint:     http://localhost:${PORT}/api/webhooks/razorpay`);
     console.log(`======================================================\n`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ Port ${PORT} is already in use by another process.`);
+      console.error(`👉 Solution: Stop the running process on port ${PORT}, or change PORT in your .env file.\n`);
+      process.exit(1);
+    } else {
+      console.error('Server error:', err);
+    }
   });
 }
 

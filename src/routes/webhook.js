@@ -1,27 +1,8 @@
 const express = require('express');
-const crypto = require('crypto');
 const router = express.Router();
 const { savePayment, addAuditLog, getPaymentById } = require('../db/database');
 const { classifyFailure } = require('../classifier');
 const { executeRecoveryAction, markAsRecovered } = require('../recoveryEngine');
-
-/**
- * Verify Razorpay Webhook Signature if secret is configured
- */
-function verifyWebhookSignature(req) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  if (!secret) return true; // Skip verification if secret not provided in development
-
-  const signature = req.headers['x-razorpay-signature'];
-  if (!signature) return false;
-
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(req.body))
-    .digest('hex');
-
-  return signature === expectedSignature;
-}
 
 /**
  * POST /api/webhooks/razorpay
@@ -29,11 +10,6 @@ function verifyWebhookSignature(req) {
  */
 router.post('/razorpay', async (req, res) => {
   try {
-    if (!verifyWebhookSignature(req)) {
-      console.warn('⚠️ Webhook signature verification failed');
-      return res.status(400).json({ error: 'Invalid webhook signature' });
-    }
-
     const payload = req.body;
     const event = payload.event;
 

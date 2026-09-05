@@ -127,7 +127,7 @@ async function handlePaymentLink(payment, classification) {
           email: true
         },
         reminder_enable: true,
-        callback_url: `http://localhost:${process.env.PORT || 3000}/api/payments/${payment.payment_id}/simulate-pay`,
+        callback_url: `${process.env.BASE_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 3000}`}/api/payments/${payment.payment_id}/simulate-pay`,
         callback_method: 'get'
       });
       linkId = linkResponse.id;
