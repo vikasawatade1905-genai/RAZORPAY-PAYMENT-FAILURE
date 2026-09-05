@@ -24,5 +24,3 @@ logs/
 Thumbs.db
 .idea/
 .vscode/
-render.yaml
-Procfile

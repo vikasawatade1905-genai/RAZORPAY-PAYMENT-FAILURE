@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: razorpay-payment-failure-recovery-agent
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_RETRY_INTERVAL_MINUTES
+        value: "2"
+      - key: MAX_RETRIES
+        value: "3"
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
