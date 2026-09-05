@@ -29,8 +29,9 @@ function saveDbToDisk() {
 async function initDb() {
   if (db) return db; // Idempotent check
 
+  const wasmDirectory = path.dirname(require.resolve('sql.js'));
   const SQL = await initSqlJs({
-    locateFile: file => `https://sql.js.org/dist/${file}`
+    locateFile: file => path.join(wasmDirectory, file)
   });
 
   if (fs.existsSync(DB_FILE)) {
