@@ -2,7 +2,10 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
-const DB_FILE = path.join(__dirname, '../../recovery_agent.sqlite');
+const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const DB_FILE = isVercel
+  ? path.join('/tmp', 'recovery_agent.sqlite')
+  : path.join(__dirname, '../../recovery_agent.sqlite');
 
 let db = null;
 
@@ -11,20 +14,30 @@ let db = null;
  */
 function saveDbToDisk() {
   if (!db) return;
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(DB_FILE, buffer);
+  try {
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(DB_FILE, buffer);
+  } catch (err) {
+    // Ignore disk write errors in strict read-only environment
+  }
 }
 
 /**
  * Initialize SQLite database connection and schema
  */
 async function initDb() {
+  if (db) return db; // Idempotent check
+
   const SQL = await initSqlJs();
 
   if (fs.existsSync(DB_FILE)) {
-    const filebuffer = fs.readFileSync(DB_FILE);
-    db = new SQL.Database(filebuffer);
+    try {
+      const filebuffer = fs.readFileSync(DB_FILE);
+      db = new SQL.Database(filebuffer);
+    } catch (e) {
+      db = new SQL.Database();
+    }
   } else {
     db = new SQL.Database();
   }

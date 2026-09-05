@@ -10,6 +10,17 @@ const { processDueRetries } = require('./recoveryEngine');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Serverless DB Auto-Init Middleware
+app.use(async (req, res, next) => {
+  try {
+    await initDb();
+    next();
+  } catch (err) {
+    console.error('DB Init Error:', err);
+    next(err);
+  }
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -30,7 +41,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Initialize DB and start server
+// Initialize DB and start server (Only for standalone Node.js environments like Render/Railway/Local)
 async function startServer() {
   await initDb();
 
@@ -60,8 +71,11 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-});
+// Only start standalone HTTP server if not running on Vercel Serverless Functions
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  startServer().catch((err) => {
+    console.error('Failed to start server:', err);
+  });
+}
 
 module.exports = app;
