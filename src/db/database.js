@@ -29,7 +29,9 @@ function saveDbToDisk() {
 async function initDb() {
   if (db) return db; // Idempotent check
 
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    locateFile: file => `https://sql.js.org/dist/${file}`
+  });
 
   if (fs.existsSync(DB_FILE)) {
     try {
