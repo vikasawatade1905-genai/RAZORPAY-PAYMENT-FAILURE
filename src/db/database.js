@@ -29,19 +29,37 @@ function saveDbToDisk() {
 async function initDb() {
   if (db) return db; // Idempotent check
 
-  const wasmDirectory = path.dirname(require.resolve('sql.js'));
-  const SQL = await initSqlJs({
-    locateFile: file => path.join(wasmDirectory, file)
-  });
-
-  if (fs.existsSync(DB_FILE)) {
+  try {
+    let wasmDirectory;
     try {
-      const filebuffer = fs.readFileSync(DB_FILE);
-      db = new SQL.Database(filebuffer);
+      wasmDirectory = path.dirname(require.resolve('sql.js'));
     } catch (e) {
+      wasmDirectory = path.join(process.cwd(), 'node_modules/sql.js/dist');
+    }
+
+    const SQL = await initSqlJs({
+      locateFile: file => {
+        const p1 = path.join(wasmDirectory, file);
+        if (fs.existsSync(p1)) return p1;
+        const p2 = path.join(process.cwd(), 'node_modules/sql.js/dist', file);
+        if (fs.existsSync(p2)) return p2;
+        return file;
+      }
+    });
+
+    if (fs.existsSync(DB_FILE)) {
+      try {
+        const filebuffer = fs.readFileSync(DB_FILE);
+        db = new SQL.Database(filebuffer);
+      } catch (e) {
+        db = new SQL.Database();
+      }
+    } else {
       db = new SQL.Database();
     }
-  } else {
+  } catch (err) {
+    console.warn('⚠️ SQL.js fallback initialization:', err.message);
+    const SQL = await initSqlJs();
     db = new SQL.Database();
   }
 
