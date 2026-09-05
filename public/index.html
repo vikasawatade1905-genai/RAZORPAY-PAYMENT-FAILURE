@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Failure Recovery Agent — Razorpay AI Buildathon</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0284c7',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 glass-card p-6 rounded-2xl shadow-2xl">
+      <div class="space-y-1">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-xl shadow-lg shadow-sky-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">
+              Payment Failure Recovery Agent
+            </h1>
+            <p class="text-xs text-slate-400 font-medium flex items-center gap-2">
+              <span>Razorpay AI Buildathon</span>
+              <span class="text-slate-600">•</span>
+              <span class="text-sky-400 font-semibold">Track: AI Revenue Recovery</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800 text-xs">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-300 font-medium">Webhook Active</span>
+        </div>
+
+        <button id="btn-simulate" onclick="runSimulator()" class="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all transform active:scale-95 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Run 50-Payment Simulator
+        </button>
+
+        <button onclick="resetData()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2.5 rounded-xl font-medium text-sm border border-slate-700 transition cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset Demo
+        </button>
+      </div>
+    </header>
+
+    <!-- Key Performance Indicator Cards (KEY METRICS) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      
+      <!-- Card 1: Total Failed Payments -->
+      <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Failed Payments</span>
+          <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="kpi-total-count" class="text-3xl font-extrabold text-white">0</span>
+          <span class="text-xs text-slate-400 font-medium">transactions</span>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Detected by webhook listener</p>
+      </div>
+
+      <!-- Card 2: Total Revenue At Risk -->
+      <div class="glass-card p-5 rounded-2xl relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Revenue At Risk</span>
+          <div class="p-2 bg-amber-500/10 text-amber-400 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="kpi-at-risk-amount" class="text-3xl font-extrabold text-amber-400">₹0</span>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Total value of failed payments</p>
+      </div>
+
+      <!-- Card 3: Total Recovered (KEY METRIC) -->
+      <div class="glass-card p-5 rounded-2xl relative overflow-hidden border-emerald-500/30 bg-emerald-950/20">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Total Recovered</span>
+          <div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="kpi-recovered-amount" class="text-3xl font-extrabold text-emerald-400">₹0</span>
+        </div>
+        <p class="mt-2 text-xs text-emerald-300/80 font-medium">💰 Actual money saved by agent</p>
+      </div>
+
+      <!-- Card 4: Recovery Rate % (KEY METRIC) -->
+      <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Recovery Rate</span>
+          <div class="p-2 bg-sky-500/10 text-sky-400 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-baseline gap-2">
+          <span id="kpi-recovery-rate" class="text-3xl font-extrabold text-sky-400">0.0%</span>
+        </div>
+        <div class="mt-3 w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div id="progress-recovery-rate" class="bg-gradient-to-r from-sky-400 to-emerald-400 h-full w-0 transition-all duration-700"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Main Content Area: Category Breakdown + Audit Log -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Failure Diagnostics Breakdown (Left 1 col) -->
+      <div class="glass-card p-6 rounded-2xl space-y-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          Failure Diagnosis Breakdown
+        </h2>
+        
+        <div id="category-breakdown-container" class="space-y-3">
+          <!-- Dynamic Category Items loaded via app.js -->
+          <div class="text-slate-400 text-sm text-center py-6">No data yet. Click "Run 50-Payment Simulator" above!</div>
+        </div>
+      </div>
+
+      <!-- Live Audit Trail Log Stream (Right 2 cols) -->
+      <div class="glass-card p-6 rounded-2xl lg:col-span-2 flex flex-col h-[340px]">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Agent Audit Trail Console
+          </h2>
+          <span class="text-xs font-mono bg-slate-900 px-2.5 py-1 rounded text-slate-400 border border-slate-800">
+            Live Execution Stream
+          </span>
+        </div>
+
+        <!-- Scrollable Console Window -->
+        <div id="audit-log-container" class="flex-1 bg-slate-950/90 rounded-xl p-4 font-mono text-xs overflow-y-auto space-y-2 border border-slate-800/80">
+          <div class="text-slate-500 italic">Waiting for payment failure events...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Failed Payments Table Section -->
+    <section class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Table Header & Filter Tabs -->
+      <div class="p-6 border-b border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Failed Payments Ledger
+          </h2>
+          <p class="text-xs text-slate-400">Detailed record of intercepted payments, classifications, and agent recovery status</p>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800 text-xs">
+          <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1.5 rounded-lg font-medium bg-sky-500 text-white transition">All</button>
+          <button onclick="setFilter('recovered')" id="filter-recovered" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Recovered</button>
+          <button onclick="setFilter('recovering')" id="filter-recovering" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Active Retries</button>
+          <button onclick="setFilter('gave_up')" id="filter-gave_up" class="px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition">Gave Up</button>
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/80 text-xs uppercase font-semibold text-slate-400 tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="px-6 py-4">Payment ID & Customer</th>
+              <th class="px-6 py-4">Amount</th>
+              <th class="px-6 py-4">Diagnosis (Why it failed)</th>
+              <th class="px-6 py-4">Agent Strategy & Action</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4 text-right">Demo Control</th>
+            </tr>
+          </thead>
+          <tbody id="payments-table-body" class="divide-y divide-slate-800/60 font-normal">
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                No payment failures recorded. Click <strong>"Run 50-Payment Simulator"</strong> to populate data!
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500">
+      Razorpay AI Buildathon — Track: AI Revenue Recovery • Built with Node.js, Express, SQLite & Tailwind CSS
+    </footer>
+
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
